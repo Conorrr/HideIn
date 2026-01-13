@@ -9,8 +9,17 @@ public class App {
         var port = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
         var injector = new PdfInjector();
 
+        var allowedOrigins = System.getenv().getOrDefault("CORS_ORIGINS", "http://localhost:5173,http://localhost:4173");
+
         var app = Javalin.create(config -> {
             config.http.maxRequestSize = 10_000_000L; // 10 MB
+            config.bundledPlugins.enableCors(cors -> {
+                cors.addRule(rule -> {
+                    for (var origin : allowedOrigins.split(",")) {
+                        rule.allowHost(origin.trim());
+                    }
+                });
+            });
         });
 
         app.get("/health", ctx -> ctx.result("ok"));
